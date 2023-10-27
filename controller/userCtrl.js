@@ -1,7 +1,7 @@
 
 const userModel = require("../models/usersModel");
 const bcrypt = require("bcryptjs");
-const {comparePassword,hashPassword}= require( "./fogetpassword");
+const {comparePassword,hashPassword}= require( "./helper");
 const jwt = require("jsonwebtoken");
 const teacherModel = require("../models/teacherModel");
 const appointmentModel = require("../models/appoinmentModel");
@@ -18,8 +18,9 @@ const registerController = async (req, res) => {
                 .send({ message: "User Already Exist", success: false });
         }
         const password = req.body.password;
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        // const salt = await bcrypt.genSalt(10);
+        // const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await hashPassword(password)
         req.body.password = hashedPassword;
         const newUser = new userModel(req.body);
         await newUser.save();
@@ -45,8 +46,8 @@ const loginController = async (req, res) => {
                 .send({ message: "user not found", success: false });
         }
        
-        // const isMatch = await bcrypt.compare(req.body.password, user.password);
-        const isMatch = await comparePassword(req.body.password, user.password);
+        const isMatch = await bcrypt.compare(req.body.password, user.password);
+        // const isMatch = await comparePassword(req.body.password, user.password);
         if (!isMatch) {
             return res
                 .status(200)
@@ -63,53 +64,54 @@ const loginController = async (req, res) => {
 };
 
 //forgetPasswordController
-//  const forgetPasswordController=async(req,res)=>{
-//     try {
-//         const {email,answer, newPassword}=req.body
-//         if(!email){
-//             res.status(400).send({
-//                 message:'email is required'
-//             })
-//            }
+ const forgetPasswordController=async(req,res)=>{
+    
+        const {email,answer,newPassword}=req.body
+        if(!email){
+            res.status(400).send({
+                message:'email is required'
+            })
+           }
 
-//            if(!answer){
-//             res.status(400).send({
-//                 message:'Answer is required'
-//             })
-//            }
+           if(!answer){
+            res.status(400).send({
+                message:'Answer is required'
+            })
+           }
 
-//            if(!newPassword){
-//             res.status(400).send({
-//                 message:'New Password is  Required'
-//             })
-//         //check
-//         const user =await userModel.findOne({email,answer});
-//         //validation
-//         if(!user){
-//             return res.status(404).send({
-//                 success:false,
-//                 message:"Wrong Email or Answer"
-//             })
-//         }
-        
-//         const hashed =await hashPassword(newPassword);
-//         await userModel.findByIdAndUpdate(user._id,{password: hashed});
-//         res.status(200).send({
-//             success: true,
-//             message:"Password Reset Successfully",
-//         })
+           if(!newPassword){
+            res.status(400).send({
+                message:'New Password is  Required'
+            })}
+        //check
+        const user =await userModel.findOne({email,answer});
+        //validation
+        if(!user){
+            return res.status(404).send({
+                message:"Wrong Email or Answer",
+                success:false,
+            })
+        }
+        try {
+        const hashed = await hashPassword(newPassword);
+        await userModel.findByIdAndUpdate(user._id,{password: hashed});
+        res.status(200).send({
+            success: true,
+            message:"Password Reset Successfully",
+        })
 
-//            }
-//     } catch (error) {
-//        console.log(error)
-//        res.status(500).send({
-//         success:false,
-//         message:'something went wrong ',
-//         error
-//        }) 
-//     }
+           }
+    catch (error) {
+       console.log(error)
+       res.status(500).send({
+        success:false,
+        message:'something went wrong ',
+        error
+       }) 
+    }
 
-//  }
+ }
+
 
 const authController = async (req, res) => {
     try {
@@ -298,5 +300,5 @@ module.exports = {
     getAllTeacherController,
     bookAppointmentController,
     userAppoinmentController,
-    // forgetPasswordController,
+    forgetPasswordController,
 };
