@@ -11,20 +11,20 @@ email:{
 },
 password:{
     type:String,
-    require:[true,'password is require']
+    require:[true,'password is require'],
 },
 phone:{
     type:Number,
     require:[true,'password is require']
 },
-// newpassword:{
-//     type:String,
-//     require:[true,'password is require']
-// },
-// answer:{
-// type: String,
-// require:[true,'password is require'] 
-// },
+newPassword:{
+    type:String,
+    require:[true,'password is require']
+},
+answer:{
+type: Number,
+require:[true,'ans is require'] 
+},
 isAdmin:{
     type:Boolean,
     default:false,
